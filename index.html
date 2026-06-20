@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Invoice & GST Calculator</title>
+    <!-- Tailwind CSS for modern, responsive layouts -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        @import url('https://googleapis.com');
+        body { font-family: 'Inter', sans-serif; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; color: black; }
+            .print-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between antialiased">
+
+    <!-- Header Section -->
+    <header class="bg-white border-b border-slate-200 py-4 px-6 sticky top-0 z-10 no-print shadow-xs">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-xl font-bold text-slate-900 tracking-tight">Invoice & GST Calculator</h1>
+                <p class="text-xs text-slate-500 mt-0.5">Instant tax compliance math & dynamic billing itemization</p>
+            </div>
+            
+            <div class="text-right sm:text-right text-center text-xs bg-slate-100 p-2.5 rounded-lg border border-slate-200">
+                <p class="font-semibold text-slate-700">Developer Profile</p>
+                <p class="text-slate-600">Name: <span class="font-medium text-slate-900">[YOUR FULL NAME]</span></p>
+                <p class="text-slate-600">Email: <span class="font-medium text-slate-900">[YOUR EMAIL ADDRESS]</span></p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="max-w-6xl w-full mx-auto p-4 sm:p-6 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Side: Interactive Input Controls -->
+        <section class="lg:col-span-7 space-y-6 no-print">
+            
+            <!-- Global Invoice Details Card -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
+                <h2 class="text-sm font-semibold text-slate-900 uppercase tracking-wider">1. Invoice Metadata</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Invoice Number</label>
+                        <input type="text" id="invNumber" value="INV-2026-001" class="w-full text-sm p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" oninput="updatePreview()">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Client Name</label>
+                        <input type="text" id="invClient" value="Acme Corporation Inc." class="w-full text-sm p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" oninput="updatePreview()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Core Line Item Creator Card -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm font-semibold text-slate-900 uppercase tracking-wider">2. Line Item & Tax Calculation</h2>
+                    <span class="text-xs bg-indigo-50 text-indigo-700 font-medium px-2 py-0.5 rounded-full">Real-time Calculation</span>
+                </div>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Product / Service Description</label>
+                        <input type="text" id="itemDesc" placeholder="e.g., Premium E-commerce Development Lifecycle" class="w-full text-sm p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">Rate (₹/$)</label>
+                            <input type="number" id="itemRate" placeholder="0.00" min="0" class="w-full text-sm p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">Qty</label>
+                            <input type="number" id="itemQty" value="1" min="1" class="w-full text-sm p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">GST Rate (%)</label>
+                            <select id="itemGst" class="w-full text-sm p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                <option value="0">0% (Exempt)</option>
+                                <option value="5">5% (Slab A)</option>
+                                <option value="12">12% (Slab B)</option>
+                                <option value="18" selected>18% (Standard)</option>
+                                <option value="28">28% (Luxury)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="addItem()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-3 rounded-md transition-all cursor-pointer shadow-sm">
+                                Add Item
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Explainer Guide -->
+            <div class="bg-slate-100 p-4 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-2">
+                <p class="font-semibold text-slate-800">Formula Context & Calculations Matrix:</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li><strong>Tax Exclusive:</strong> Base Amount = $\text{Rate} \times \text{Quantity}$</li>
+                    <li><strong>GST Component Amount:</strong> Tax Contribution = $\text{Base Amount} \times \left(\frac{\text{GST Rate}}{100}\right)$</li>
+                    <li><strong>Comprehensive Total:</strong> Line Total = $\text{Base Amount} + \text{Tax Contribution}$</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Right Side: Dynamic Invoice Preview & Ledger -->
+        <section class="lg:col-span-5">
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print-card sticky top-24 space-y-6">
+                
+                <!-- Invoice Header Context -->
+                <div class="flex justify-between items-start border-b border-slate-100 pb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900" id=prevNoText>INV-2026-001</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Date Issued: June 19, 2026</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs bg-emerald-50 text-emerald-700 font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Unpaid Draft</span>
+                    </div>
+                </div>
+
+                <!-- Client Focus Data -->
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Billed To:</p>
+                    <p class="text-sm font-bold text-slate-800 mt-0.5" id="prevClientText">Acme Corporation Inc.</p>
+                </div>
+
+                <!-- Dynamic Items Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-slate-400 font-semibold uppercase">
+                                <th class="py-2">Item</th>
+                                <th class="py-2 text-center">Qty</th>
+                                <th class="py-2 text-right">Tax (GST)</th>
+                                <th class="py-2 text-right">Total</th>
+                                <th class="py-2 text-right no-print"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceItemsTable" class="divide-y divide-slate-100 text-slate-700">
+                            <!-- Populated Dynamically via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Financial Ledger Summaries -->
+                <div class="border-t border-slate-200 pt-4 space-y-2 text-sm">
+                    <div class="flex justify-between text-slate-600">
+                        <span>Tax Exclusive Subtotal:</span>
+                        <span id="summarySubtotal">₹0.00</span>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>Aggregated GST Liability:</span>
+                        <span id="summaryTax">₹0.00</span>
+                    </div>
